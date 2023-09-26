@@ -1,4 +1,4 @@
-# bunner
+# Result.ts
 
 To install dependencies:
 
