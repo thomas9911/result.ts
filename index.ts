@@ -1,60 +1,79 @@
 export class ResultError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "ResultError";
+  constructor(message: string) {
+    super(message);
+    this.name = "ResultError";
+  }
+}
+
+export class Result<T, E> {
+  #value: T;
+  #error: E;
+  ok: boolean;
+  constructor(value: T, error: E, isOk: boolean) {
+    this.ok = isOk;
+    this.#error = error;
+    this.#value = value;
+  }
+
+  static ok<T, E>(value: T): Result<T, null> {
+    return new Result(value, null, true);
+  }
+
+  static error<T, E>(error: E): Result<null, E> {
+    return new Result(null, error, false);
+  }
+
+  toArray(): [T, E] {
+    return [this.#value, this.#error];
+  }
+
+  map<R>(func: (value: T) => R): Result<R, E> | Result<T, E> {
+    if (this.ok) {
+      return new Result(func(this.#value), this.#error, true);
+    } else {
+      return this;
     }
   }
 
-export class Result<T, E> {
-    #value: T;
-    #error: E;
-    ok: boolean;
-    constructor(value: T, error: E) {
-        this.ok = true;
-        this.#error = error;
-        this.#value = value;
+  mapError<R>(func: (value: E) => R): Result<T, E> | Result<T, R> {
+    if (!this.ok) {
+      return new Result(this.#value, func(this.#error), false);
+    } else {
+      return this;
     }
+  }
 
-    static ok<T, E>(value: T): Result<T, null> {
-        return new Result(value, null)
+  // is this a nice name?
+  flatMap<R, F>(func: (value: T) => Result<R, F>): Result<R, F> | Result<T, E> {
+    if (this.ok) {
+      return func(this.#value);
+    } else {
+      return this;
     }
+  }
 
-    static error<T, E>(error: E): Result<null, E> {
-        const result = new Result(null, error)
-        result.ok = false;
-        return result
+  // is this a nice name?
+  flatMapError<R, F>(func: (value: E) => Result<R, F>): Result<R, F> | Result<T, E> {
+    if (!this.ok) {
+      return func(this.#error);
+    } else {
+      return this;
     }
+  }
 
-    map<R>(func: (value: T) => R): Result<R, null> | Result<T, E>  {
-        if (this.ok) {
-            return Result.ok(func(this.#value))
-        } else {
-            return this
-        }
+  unwrap() {
+    if (this.ok) {
+      return this.#value;
+    } else {
+      throw new ResultError(`Expected ok, but found error '${this.#error}'`);
     }
+  }
 
-    // is this a nice name?
-    flatMap<R, F>(func: (value: T) => Result<R, F> ) : Result<R, F> | Result<T, E>  {
-        if (this.ok) {
-            return func(this.#value)
-        } else {
-            return this
-        } 
+  unwrapError() {
+    if (!this.ok) {
+      return this.#error;
+    } else {
+      throw new ResultError(`Expected error, but found ok '${this.#value}'`);
     }
-
-    unwrap() {
-        if (this.ok) {
-            return this.#value
-        } else {
-            throw new ResultError(`Expected ok, but found error '${this.#error}'`)
-        }
-    }
-
-    unwrapError() {
-        if (!this.ok) {
-            return this.#error
-        } else {
-            throw new ResultError(`Expected error, but found ok '${this.#value}'`)
-        }
-    }
+  }
 }

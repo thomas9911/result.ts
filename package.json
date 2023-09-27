@@ -2,8 +2,12 @@
   "name": "result",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "fmt": "prettier -w '**/*.ts'"
+  },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "prettier": "^3.0.3"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
