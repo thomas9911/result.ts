@@ -15,12 +15,12 @@ export class Result<T, E> {
     this.#value = value;
   }
 
-  static ok<T, E>(value: T): Result<T, null> {
-    return new Result(value, null, true);
+  static ok<T, E>(value: T): Result<T, never> {
+    return new Result(value, null, true) as Result<T, never>;
   }
 
-  static error<T, E>(error: E): Result<null, E> {
-    return new Result(null, error, false);
+  static error<T, E>(error: E): Result<never, E> {
+    return new Result(null, error, false) as Result<never, E>;
   }
 
   toArray(): [T, E] {

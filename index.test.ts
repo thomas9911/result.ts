@@ -42,16 +42,16 @@ test("error mapError", () => {
   expect(updatedR.unwrapError()).toBe("1");
 });
 
-test("flow", () => {
+test("chain works with types", () => {
   const out = Result.ok(1)
     .map((x) => x + 1)
     .map((x) => 2 * x)
-    .flatMap((x) => Result.error(x))
-    // would be nice if we can fix that you dont need the as number
-    .map((x) => (x as number) + 3)
-    .mapError((x) => 2 * (x as number))
-    .flatMapError(Result.ok)
+    .flatMap((x) => Result.error(`${x}`))
+    .map((x) => x + 3)
+    .mapError((x) => x.concat("2") )
+    .flatMapError((x) => Result.ok(Number(x)))
+    .map((x) => x + 1)
     .unwrap()
 
-    expect(out).toBe(8)
+    expect(out).toBe(43)
 });
